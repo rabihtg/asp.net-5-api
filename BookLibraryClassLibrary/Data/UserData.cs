@@ -15,9 +15,9 @@ namespace BookLibraryClassLibrary.Data
     {
         private readonly ISqlDataAccess _db;
 
-        public UserData(ISqlDataAccess _db)
+        public UserData(ISqlDataAccess db)
         {
-            this._db = _db;
+            _db = db;
         }
 
         public Task<IEnumerable<UserModel>> GetUsers()
@@ -30,6 +30,17 @@ namespace BookLibraryClassLibrary.Data
             return (await _db.LoadData<UserModel, dynamic>("dbo.spUser_Get", new { Id = id })).FirstOrDefault();
         }
 
+        public async Task<bool> IsValidUser(InsertUserVM userVM)
+        {
+            var checkUser = await GetUser(userVM.UserName);
+            if (checkUser is null) return false;
+
+            var salt = checkUser.Password.Split("$")[1].Split(":")[0];
+            if (!UserPasswordHashHandler.VerifyHash(userVM.Password, salt, checkUser.Password, typeof(SHA256Managed))) return false;
+
+            return true;
+        }
+
         public async Task<UserModel> GetUser(string userName)
         {
             return (await _db.LoadData<UserModel, dynamic>("dbo.spUser_GetByName", new { UserName = userName })).FirstOrDefault();
@@ -37,26 +48,27 @@ namespace BookLibraryClassLibrary.Data
 
         public Task InsertUser(InsertUserVM userVM)
         {
-            UserPasswordHashHandler hasher = new(userVM.Password);
-            hasher.ToString();
             UserModel user = new()
             {
                 Id = Guid.NewGuid(),
                 UserName = userVM.UserName,
-                Password = hasher.CreateHash(typeof(SHA256Managed))
+                Password = UserPasswordHashHandler.CreateHash(userVM.Password, typeof(SHA256Managed)).ToString()
             };
 
             return _db.SaveData("dbo.spUser_Insert", user);
         }
 
-        public Task UpdateUserName(string userName)
+        public Task UpdateUserName(UpdateUserUserNameVM userVM)
         {
-            return _db.SaveData("dbo.spUser_UpdateUserName", new { UserName = userName });
+            return _db.SaveData("dbo.spUser_UpdateUserName", new { userVM.NewUserName, userVM.OldUserName });
         }
-        public Task UpdateUserPassword(string password)
+
+        public Task UpdateUserPassword(UpdateUserPassVM user)
         {
-            return _db.SaveData("dbo.spUser_UpdatePassword", new { Password = password });
+            string newPassHash = UserPasswordHashHandler.CreateHash(user.NewPassword, typeof(SHA256Managed)).ToString();
+            return _db.SaveData("dbo.spUser_UpdatePassword", new { NewPassword = newPassHash, user.UserName });
         }
+
         public Task DeleteUser(Guid id)
         {
             return _db.SaveData("dbo.spUser_Delete", new { Id = id });

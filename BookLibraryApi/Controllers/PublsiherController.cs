@@ -57,8 +57,10 @@ namespace BookLibraryApi.Controllers
                 Id = id,
                 FullName = publisherVM.FullName
             };
+
             await _data.UpdatePublisher(publisher);
             return Ok();
+
         }
 
         [HttpDelete("{id:Guid}")]

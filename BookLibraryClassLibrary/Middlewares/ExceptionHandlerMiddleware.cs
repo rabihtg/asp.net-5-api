@@ -1,4 +1,5 @@
-﻿using BookLibraryClassLibrary.ViewModels;
+﻿using BookLibraryClassLibrary.CustomExceptions;
+using BookLibraryClassLibrary.ViewModels;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Net;
@@ -21,6 +22,10 @@ namespace BookLibraryClassLibrary.Middlewares
             {
                 await _next(context);
             }
+            catch (CustomExceptionsBase cex)
+            {
+                await HanldeException(context, cex);
+            }
             catch (Exception ex)
             {
                 await HanldeException(context, ex);
@@ -29,13 +34,21 @@ namespace BookLibraryClassLibrary.Middlewares
 
         private static Task HanldeException(HttpContext context, Exception ex)
         {
-            context.Response.StatusCode = ((int)HttpStatusCode.InternalServerError);
+            if (ex is CustomExceptionsBase)
+            {
+                context.Response.StatusCode = (ex as CustomExceptionsBase).StatusCode;
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            }
+
             context.Response.ContentType = "application/json";
 
             return context.Response.WriteAsJsonAsync(new ErrorVM
             {
                 Message = $"Unexpected Error Occured, Request Failed; {ex.Message}",
-                StatusCode = 500
+                StatusCode = context.Response.StatusCode
             });
         }
     }

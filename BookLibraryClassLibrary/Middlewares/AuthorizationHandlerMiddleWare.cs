@@ -1,5 +1,7 @@
-﻿using BookLibraryClassLibrary.ViewModels;
+﻿using BookLibraryClassLibrary.Structs;
+using BookLibraryClassLibrary.ViewModels;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Threading.Tasks;
 
 namespace BookLibraryClassLibrary.Middlewares
@@ -14,29 +16,26 @@ namespace BookLibraryClassLibrary.Middlewares
         }
         public async Task InvokeAsync(HttpContext context)
         {
-            if (!context.Request.Headers.ContainsKey("Authorization"))
+            if (NoAuthRoutes.Routes.Contains(context.Request.Path.ToString().ToLower()))
             {
-                context.Response.StatusCode = 401;
-                context.Response.ContentType = "application/json";
-
-                await context.Response.WriteAsJsonAsync(new ErrorVM
-                {
-                    Message = "Authorization token not found in request's header.",
-                    StatusCode = 401
-                });
+                await _next(context);
             }
             else
             {
-                await _next(context);
-                if (context.Response.StatusCode == 401)
+                if (!context.Request.Headers.ContainsKey("Authorization"))
                 {
+                    context.Response.StatusCode = 401;
                     context.Response.ContentType = "application/json";
 
                     await context.Response.WriteAsJsonAsync(new ErrorVM
                     {
-                        Message = "Authorization Failed.",
+                        Message = $"Authorization token not found in request's header; path: {context.Request.Path}",
                         StatusCode = 401
                     });
+                }
+                else
+                {
+                    await _next(context);
                 }
             }
         }

@@ -1,44 +1,98 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Text;
+﻿using BookLibraryClassLibrary.Models;
+using BookLibraryTestingConsole.Game;
+using BookLibraryTestingConsole.PipeLine;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BookLibraryTestingConsole
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static List<Thread> Count = new();
+        public static Task MainAction(BookModel book)
         {
-            var passHash = PassHash.Encode<SHA256>("rabih123", 16);
 
-            var oldHash = Convert.ToBase64String(passHash.Passhash);
-            var oldSalt = Convert.ToBase64String(passHash.Salt);
-
-
-
-            //Console.WriteLine(PassHash.Verify<SHA256>("rabih123", Convert.FromBase64String(oldSalt), Convert.FromBase64String(oldHash)));
-
-
-            Console.WriteLine(Convert.ToBase64String(passHash.Passhash));
-            Console.WriteLine(Convert.ToBase64String(passHash.Salt));
-
-            /*int stopIndex = Math.Min(asciBytes.Length, utf8Bytes.Length);
-
-            stopIndex = Math.Min(utf32Bytes.Length, stopIndex);
-
-
-            int max = Math.Max(asciBytes.Length, utf8Bytes.Length);
-
-            max = Math.Max(utf32Bytes.Length, max);
-
-            Console.WriteLine($"max: {max}, min: {stopIndex}");
-
-            for (int i = 0; i < stopIndex; i++)
+            foreach (var item in book.GetType().GetProperties())
             {
-                Console.WriteLine($"Ascii: {asciBytes[i]}");
-                Console.WriteLine($"utf8: {utf8Bytes[i]}");
-                Console.WriteLine($"utf32: {utf32Bytes[i]}");
-            }*/
+                Console.WriteLine($"{item.Name}: {item.GetValue(book)}");
+            }
 
+            Console.WriteLine($"This is Thread: {Thread.CurrentThread.ManagedThreadId}, waiting");
+
+            var x = 5;
+
+            for (int i = 0; i < 100_000_000; i++)
+            {
+                x *= i;
+            }
+
+            Count.Add(Thread.CurrentThread);
+            return Task.CompletedTask;
+        }
+        public static void Main(string[] args)
+        {
+            /*var book = new BookModel()
+            {
+                DateAdded = DateTime.Now.AddDays(-100),
+                Title = "A New Book",
+                Description = "Something",
+                PublisherId = Guid.NewGuid(),
+                Id = Guid.NewGuid()
+            };
+
+            var x = new PipeBuilder<BookModel>(MainAction).AddPipe(typeof(TimeMiddleWare<BookModel>)).AddPipe(typeof(ExceptionMiddleWareTwo<BookModel>)).Build();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var t = new Thread(() => x(book));
+                t.Start();
+                t.Join();
+            }
+
+            var run = true;
+            while (run)
+            {
+                var c = Console.ReadLine();
+                if (c == "w")
+                {
+                    run = false;
+                }
+            }
+            Console.WriteLine($"Total: {Count.Count}");*/
+
+            var game = new TicTacToe();
+            var playerOne = new HumanPlayer();
+            var playerTwo = new RandomCompPlayer();
+
+            PlayGame(game, playerOne, playerTwo);
+        }
+
+        public static void PlayGame(TicTacToe game, TicToePlayers playerOne, TicToePlayers playerTwo)
+        {
+            playerOne.Letter = "X";
+            playerTwo.Letter = "O";
+
+            var currentPlayer = playerOne;
+
+            TicTacToe.BoardSqaures();
+
+            while (game.HasMoves())
+            {
+                var sqaure = currentPlayer.MakeMove(game.GetAvailbleMoves());
+                game.MakeMove(sqaure, currentPlayer);
+                game.PrintBoard();
+
+                if (game.Winner == currentPlayer)
+                {
+                    Console.WriteLine($"{currentPlayer.Letter} Wins!");
+                    return;
+                }
+
+                currentPlayer = currentPlayer == playerOne ? playerTwo : playerOne;
+            }
+            Console.WriteLine("It's A Tie.");
         }
     }
 }

@@ -11,9 +11,10 @@ namespace BookLibraryClassLibrary.Data
         Task DeleteUser(Guid id);
         Task<UserModel> GetUser(Guid id);
         Task<UserModel> GetUser(string userName);
+        Task<bool> IsValidUser(InsertUserVM userVM);
         Task<IEnumerable<UserModel>> GetUsers();
         Task InsertUser(InsertUserVM userVM);
-        Task UpdateUserName(string userName);
-        Task UpdateUserPassword(string password);
+        Task UpdateUserName(UpdateUserUserNameVM userVM);
+        Task UpdateUserPassword(UpdateUserPassVM user);
     }
 }

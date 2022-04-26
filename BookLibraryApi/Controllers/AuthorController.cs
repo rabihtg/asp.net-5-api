@@ -1,6 +1,7 @@
 ﻿using BookLibraryClassLibrary.Data;
 using BookLibraryClassLibrary.Models;
 using BookLibraryClassLibrary.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace BookLibraryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AuthorController : ControllerBase
     {
         private readonly IAuthorData _data;

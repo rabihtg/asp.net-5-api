@@ -11,13 +11,11 @@ namespace BookLibraryClassLibrary.Authentication
 {
     public class UserPasswordHashHandler
     {
-        private readonly RandomNumberGenerator _gnr = RandomNumberGenerator.Create();
+        private static readonly RandomNumberGenerator _gnr = RandomNumberGenerator.Create();
 
         private readonly byte[] _hashBytes;
 
         private readonly byte[] _saltBytes;
-
-        private readonly byte[] _passBytes;
 
         private UserPasswordHashHandler(byte[] saltBytes, byte[] hashBytes)
         {
@@ -25,40 +23,38 @@ namespace BookLibraryClassLibrary.Authentication
             _hashBytes = hashBytes;
         }
 
-        public UserPasswordHashHandler(string password, int saltLength = 8)
+        public static string CreateHash(string password, Type hashAlgo)
         {
-            _saltBytes = GenerateSalt(saltLength);
-            _passBytes = Encoding.UTF8.GetBytes(password);
+            return CreateHash(password, GenerateSalt(8), hashAlgo);
         }
 
-        public UserPasswordHashHandler(string password, string salt)
+        public static string CreateHash(string password, int saltSize, Type hashAlgo)
         {
-            _saltBytes = Convert.FromBase64String(salt);
-            _passBytes = Encoding.UTF8.GetBytes(password);
+            return CreateHash(password, GenerateSalt(saltSize), hashAlgo);
         }
 
-        public string CreateHash(Type hashAlgo)
+        public static string CreateHash(string password, byte[] saltBytes, Type hashAlgo)
         {
             if (!hashAlgo.IsSubclassOf(typeof(HashAlgorithm))) throw new Exception("Invalid Algorithm Type");
-            var fullBytes = GenerateFullBytes();
+
+            var fullBytes = GenerateFullBytes(Encoding.UTF8.GetBytes(password), saltBytes);
 
             var hashFunc = (HashAlgorithm)Activator.CreateInstance(hashAlgo);
 
             var hashByte = hashFunc.ComputeHash(fullBytes);
 
-            return new UserPasswordHashHandler(_saltBytes, hashByte).ToString();
+            return new UserPasswordHashHandler(saltBytes, hashByte).ToString();
         }
 
         public static bool VerifyHash(string password, string salt, string hash, Type hashAlgo)
         {
-            return hash == new UserPasswordHashHandler(password, salt).CreateHash(hashAlgo).ToString();
+            return hash == CreateHash(password, Convert.FromBase64String(salt), hashAlgo).ToString();
         }
-
         private new string ToString()
         {
             return $"salt${Convert.ToBase64String(_saltBytes)}:{Convert.ToBase64String(_hashBytes)}";
         }
-        private byte[] GenerateSalt(int saltSize)
+        private static byte[] GenerateSalt(int saltSize)
         {
             byte[] salt = new byte[saltSize];
 
@@ -66,18 +62,18 @@ namespace BookLibraryClassLibrary.Authentication
 
             return salt;
         }
-        private byte[] GenerateFullBytes()
+        private static byte[] GenerateFullBytes(byte[] passBytes, byte[] saltBytes)
         {
-            var fullBytes = new byte[_saltBytes.Length + _passBytes.Length];
+            var fullBytes = new byte[saltBytes.Length + passBytes.Length];
 
-            for (int i = 0; i < _saltBytes.Length; i++)
+            for (int i = 0; i < saltBytes.Length; i++)
             {
-                fullBytes[i] = _saltBytes[i];
+                fullBytes[i] = saltBytes[i];
             }
 
-            for (int i = 0; i < _passBytes.Length; i++)
+            for (int i = 0; i < passBytes.Length; i++)
             {
-                fullBytes[_saltBytes.Length + i] = _passBytes[i];
+                fullBytes[saltBytes.Length + i] = passBytes[i];
             }
             return fullBytes;
         }

@@ -26,16 +26,14 @@ namespace BookLibraryClassLibrary.JWT
             _data = data;
         }
 
+        /// <summary>
+        /// Returns A validation Token if userVM is a valid User.
+        /// </summary>
+        /// <param name="userVM"></param>
+        /// <returns>Token</returns>
         public async Task<TokenModel> Authenticate(InsertUserVM userVM)
         {
-            var checkUser = await _data.GetUser(userVM.UserName);
-            if (checkUser is null) return null;
-
-            var salt = checkUser.Password.Split("$")[1].Split(":")[0];
-            if (!UserPasswordHashHandler.VerifyHash(userVM.Password, salt, checkUser.Password, typeof(SHA256Managed)))
-            {
-                return null;
-            }
+            if ((await _data.IsValidUser(userVM)) == false) return null;
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -56,6 +54,7 @@ namespace BookLibraryClassLibrary.JWT
             var token = tokenHandler.CreateToken(tokenDesc);
 
             return new TokenModel { Token = tokenHandler.WriteToken(token) };
+
         }
     }
 }

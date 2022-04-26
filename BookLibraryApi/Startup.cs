@@ -37,20 +37,21 @@ namespace BookLibraryApi
 
             services.AddControllers();
 
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
-            //{
-            //    opt.SaveToken = true;
-            //    var key = Encoding.ASCII.GetBytes(Configuration["JWT:Key"]);
-            //    opt.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateAudience = false,
-            //        ValidateIssuer = false,
-            //        ValidateLifetime = true,
-            //        ValidateIssuerSigningKey = true,
-            //        IssuerSigningKey = new SymmetricSecurityKey(key)
-            //    };
-            //});
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+            {
+                opt.SaveToken = true;
+                var key = Encoding.ASCII.GetBytes(Configuration["JWT:Key"]);
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
 
+            services.AddAuthorization();
 
             services.AddTransient<IJwtManager, JwtManager>();
             services.AddTransient<ISqlDataAccess, SqlDataAccess>();
@@ -76,13 +77,13 @@ namespace BookLibraryApi
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookLibraryApi v1"));
             }
 
-            //app.UseMiddleware<AuthorizationHandlerMiddleWare>();
+            app.UseMiddleware<AuthorizationHandlerMiddleWare>();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
