@@ -3,6 +3,8 @@ using BookLibraryClassLibrary.DTO;
 using BookLibraryClassLibrary.Models;
 using BookLibraryClassLibrary.Paging;
 using BookLibraryClassLibrary.ViewModels;
+using BookLibraryClassLibrary.ModelResponseWrapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -27,7 +29,6 @@ namespace BookLibraryApi.Controllers
         [HttpPost]
         public async Task<IActionResult> InsertBook(InsertBookVM bookVM)
         {
-            //await _data.InsertManyTestBooks();
             var bookDto = new InsertBookDto
             {
                 Id = Guid.NewGuid(),
@@ -60,12 +61,13 @@ namespace BookLibraryApi.Controllers
         }
 
         [HttpGet("search")]
+        [AllowAnonymous]
         public async Task<IActionResult> SearchBooks(string title, DateTime? addedBefore, int? pageIndex)
         {
 
             var result = await _data.SearchBooks(title, addedBefore);
             var bookPage = PaginatedList<BookModel>.Create(result.AsQueryable(), pageIndex, 100);
-            return Ok(bookPage);
+            return Ok(new ExtraInfoWrapper<BookModel>(bookPage));
 
         }
 
@@ -77,7 +79,7 @@ namespace BookLibraryApi.Controllers
 
             _logger.LogInformation("From book controller Request Handle Succesfuly");
 
-            return Ok(booksPage);
+            return Ok(new ExtraInfoWrapper<BookModel>(booksPage));
         }
 
         [HttpGet("with-authors-and-publisher")]

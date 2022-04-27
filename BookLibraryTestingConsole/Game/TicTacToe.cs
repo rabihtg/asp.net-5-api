@@ -75,49 +75,56 @@ namespace BookLibraryTestingConsole.Game
             int row = square / 3;
             int col = square % 3;
 
-            bool winRow = true;
-            bool winCol = true;
-            bool winDiag = false;
+            bool win = true;
 
             for (int i = (row * 3); i < (row * 3) + 3; i++)
             {
 
                 if (Board[i] != player.Letter)
                 {
-                    winRow = false;
+                    win = false;
                 }
             }
+
+            if (win) return win;
+            win = true;
 
             for (int i = col; i < col + 7; i += 3)
             {
                 if (Board[i] != player.Letter)
                 {
-                    winCol = false;
+                    win = false;
                 }
             }
 
+            if (win) return win;
+
             if (square % 2 == 0)
             {
-                winDiag = true;
-
+                win = true;
                 foreach (int i in new int[] { 0, 4, 8 })
                 {
                     if (Board[i] != player.Letter)
                     {
-                        winDiag = false;
+                        win = false;
                     }
                 }
+
+                if (win) return true;
+                win = true;
 
                 foreach (int i in new int[] { 2, 4, 6 })
                 {
                     if (Board[i] != player.Letter)
                     {
-                        winDiag = false;
+                        win = false;
                     }
                 }
+
+                if (win) return win;
             }
 
-            return winRow || winCol || winDiag;
+            return win;
         }
     }
 }

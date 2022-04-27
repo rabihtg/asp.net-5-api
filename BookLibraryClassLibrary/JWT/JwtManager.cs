@@ -45,7 +45,8 @@ namespace BookLibraryClassLibrary.JWT
                 {
                     new Claim(ClaimTypes.NameIdentifier, userVM.UserName),
                     new Claim(ClaimTypes.Role, "x-1"),
-                    new Claim("region", "MiddleEast")
+                    new Claim("region", "MiddleEast"),
+                    new Claim("age", "19")
                 }),
                 Expires = DateTime.Now.AddMinutes(10),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

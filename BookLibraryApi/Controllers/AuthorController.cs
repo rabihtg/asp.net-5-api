@@ -12,7 +12,7 @@ namespace BookLibraryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize("AtLeast18")]
     public class AuthorController : ControllerBase
     {
         private readonly IAuthorData _data;

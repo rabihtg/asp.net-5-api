@@ -19,11 +19,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BookLibraryClassLibrary.Middlewares;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace BookLibraryApi
 {
     public class Startup
     {
+        public string AllowedOriginsPolicy { get; } = "AllowedOrigins";
+        public string MinumumAgePolicy { get; } = "AtLeast18";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -51,7 +56,18 @@ namespace BookLibraryApi
                 };
             });
 
-            services.AddAuthorization();
+
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy(name: MinumumAgePolicy, builder =>
+                {
+                    builder.AddRequirements(new AgeRequirment(17));
+                });
+            });
+
+
+
+            services.AddSingleton<IAuthorizationHandler, AgeRequirementHandler>();
 
             services.AddTransient<IJwtManager, JwtManager>();
             services.AddTransient<ISqlDataAccess, SqlDataAccess>();
@@ -60,6 +76,17 @@ namespace BookLibraryApi
             services.AddTransient<IPublisherData, PublisherData>();
             services.AddTransient<IUserData, UserData>();
 
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: AllowedOriginsPolicy, builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                });
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookLibraryApi", Version = "v1" });
@@ -67,6 +94,7 @@ namespace BookLibraryApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -77,13 +105,16 @@ namespace BookLibraryApi
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookLibraryApi v1"));
             }
 
-            app.UseMiddleware<AuthorizationHandlerMiddleWare>();
+            //app.UseMiddleware<AuthorizationHandlerMiddleWare>();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
+            app.UseCors(AllowedOriginsPolicy);
+
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

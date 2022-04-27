@@ -11,12 +11,13 @@ namespace BookLibraryClassLibrary.Paging
         public int PageIndex { get; private set; }
         public int TotalPages { get; private set; }
 
-        public PaginatedList(List<T> pageItems, int count, int pageSize, int pageIndex)
+        public PaginatedList(List<T> pageItems, int count, int pageIndex, int pageSize)
         {
             PageIndex = pageIndex;
-            TotalPages = (int)Math.Floor(count / (double)pageSize);
+            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
 
             AddRange(pageItems);
+
         }
         public static PaginatedList<T> Create(IQueryable<T> source, int? pageIndex, int pageSize = 100)
         {
@@ -27,6 +28,7 @@ namespace BookLibraryClassLibrary.Paging
             var result = source.Skip((pageIndexVal - 1) * pageSize).Take(pageSize).ToList();
 
             return new PaginatedList<T>(result, count, pageIndexVal, pageSize);
+
         }
     }
 }

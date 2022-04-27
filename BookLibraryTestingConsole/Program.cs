@@ -1,6 +1,5 @@
 ﻿using BookLibraryClassLibrary.Models;
 using BookLibraryTestingConsole.Game;
-using BookLibraryTestingConsole.PipeLine;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,6 +10,7 @@ namespace BookLibraryTestingConsole
     public class Program
     {
         public static List<Thread> Count = new();
+
         public static Task MainAction(BookModel book)
         {
 
@@ -31,6 +31,7 @@ namespace BookLibraryTestingConsole
             Count.Add(Thread.CurrentThread);
             return Task.CompletedTask;
         }
+
         public static void Main(string[] args)
         {
             /*var book = new BookModel()
@@ -63,10 +64,13 @@ namespace BookLibraryTestingConsole
             Console.WriteLine($"Total: {Count.Count}");*/
 
             var game = new TicTacToe();
+
             var playerOne = new HumanPlayer();
+            var playerThree = new HumanPlayer();
+
             var playerTwo = new RandomCompPlayer();
 
-            PlayGame(game, playerOne, playerTwo);
+            PlayGame(game, playerOne, playerThree);
         }
 
         public static void PlayGame(TicTacToe game, TicToePlayers playerOne, TicToePlayers playerTwo)
@@ -86,7 +90,13 @@ namespace BookLibraryTestingConsole
 
                 if (game.Winner == currentPlayer)
                 {
-                    Console.WriteLine($"{currentPlayer.Letter} Wins!");
+                    Console.WriteLine();
+                    Console.WriteLine("#############################################");
+                    Console.WriteLine();
+                    Console.WriteLine($"\t\t{currentPlayer.Letter} Wins!");
+                    Console.WriteLine();
+                    Console.WriteLine("#############################################");
+                    Console.WriteLine();
                     return;
                 }
 

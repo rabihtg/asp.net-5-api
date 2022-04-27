@@ -36,7 +36,7 @@ namespace BookLibraryClassLibrary.Data
             if (checkUser is null) return false;
 
             var salt = checkUser.Password.Split("$")[1].Split(":")[0];
-            if (!UserPasswordHashHandler.VerifyHash(userVM.Password, salt, checkUser.Password, typeof(SHA256Managed))) return false;
+            if (!UserPassHashHandlerTwo.VerifyHash(userVM.Password, salt, checkUser.Password, typeof(SHA256Managed))) return false;
 
             return true;
         }
@@ -52,7 +52,7 @@ namespace BookLibraryClassLibrary.Data
             {
                 Id = Guid.NewGuid(),
                 UserName = userVM.UserName,
-                Password = UserPasswordHashHandler.CreateHash(userVM.Password, typeof(SHA256Managed)).ToString()
+                Password = UserPassHashHandlerTwo.Compute(userVM.Password, typeof(SHA256Managed)).ToString()
             };
 
             return _db.SaveData("dbo.spUser_Insert", user);

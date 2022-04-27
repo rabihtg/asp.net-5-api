@@ -1,6 +1,7 @@
 ﻿using BookLibraryClassLibrary.Data;
 using BookLibraryClassLibrary.Models;
 using BookLibraryClassLibrary.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,12 @@ namespace BookLibraryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PublsiherController : ControllerBase
+    [Authorize]
+    public class PublisherController : ControllerBase
     {
         private readonly IPublisherData _data;
 
-        public PublsiherController(IPublisherData data)
+        public PublisherController(IPublisherData data)
         {
             _data = data;
         }
