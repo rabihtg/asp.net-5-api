@@ -119,10 +119,7 @@ namespace BookLibraryClassLibrary.Data
                         x++;
                     }
                 }
-                //for (int j = 0; j < randAmountVal; j++)
-                //{
 
-                //}
 
                 var bookDto = new InsertBookDto
                 {

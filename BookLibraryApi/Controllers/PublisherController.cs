@@ -12,7 +12,6 @@ namespace BookLibraryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PublisherController : ControllerBase
     {
         private readonly IPublisherData _data;

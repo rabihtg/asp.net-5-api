@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BookLibraryClassLibrary.Middlewares
 {
-    public class AuthorizationHandlerMiddleWare
+    public class AuthorizationHandlerMiddleWare /*: IMiddleware */
     {
         private readonly RequestDelegate _next;
 

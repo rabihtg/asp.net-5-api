@@ -1,4 +1,5 @@
 ﻿using BookLibraryClassLibrary.Data;
+using BookLibraryClassLibrary.ModelResponseWrapper;
 using BookLibraryClassLibrary.Models;
 using BookLibraryClassLibrary.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +13,6 @@ namespace BookLibraryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize("AtLeast18")]
     public class AuthorController : ControllerBase
     {
         private readonly IAuthorData _data;
@@ -32,24 +32,21 @@ namespace BookLibraryApi.Controllers
                 FullName = authorVM.FullName
             };
             await _data.InsertAuthor(author);
-            return Ok(author);
-
+            return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, author);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAuthors()
         {
-
             var result = await _data.GetAuthors();
-            return Ok(result);
-
+            return Ok(new ExtraInfoWrapper<AuthorModel>(result.ToList()));
         }
 
         [HttpGet("with-books")]
         public async Task<IActionResult> GetAuthorsWithBooks()
         {
             var result = await _data.GetAuthorWithBooks();
-            return Ok(result);
+            return Ok(new ExtraInfoWrapper<AuthorWithBooksModel>(result.ToList()));
         }
 
         [HttpGet("{id:Guid}")]
@@ -62,7 +59,6 @@ namespace BookLibraryApi.Controllers
         [HttpPut("{id:Guid}")]
         public async Task<IActionResult> UpdateAuthor(Guid id, UpdateAuthorVM authorVM)
         {
-
             var author = new AuthorModel
             {
                 Id = id,
@@ -70,7 +66,6 @@ namespace BookLibraryApi.Controllers
             };
             await _data.UpdateAuthor(author);
             return Ok();
-
         }
 
         [HttpDelete("{id:Guid}")]

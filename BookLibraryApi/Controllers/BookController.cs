@@ -40,7 +40,7 @@ namespace BookLibraryApi.Controllers
             };
 
             await _data.InsertBook(bookDto);
-            return Ok();
+            return CreatedAtAction(nameof(GetBook), new { id = bookDto.Id }, bookDto);
         }
 
         [HttpPost("with-dp")]
@@ -89,7 +89,7 @@ namespace BookLibraryApi.Controllers
 
             PaginatedList<BookWithPublisherAndAuthorsModel> booksPage = PaginatedList<BookWithPublisherAndAuthorsModel>.Create(result.AsQueryable(), pageIndex);
 
-            return Ok(booksPage);
+            return Ok(new ExtraInfoWrapper<BookWithPublisherAndAuthorsModel>(booksPage));
         }
 
         [HttpGet("{id:Guid}")]

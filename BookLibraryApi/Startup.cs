@@ -1,26 +1,19 @@
-using BookLibraryClassLibrary.Authentication;
 using BookLibraryClassLibrary.Data;
 using BookLibraryClassLibrary.DataAccess;
 using BookLibraryClassLibrary.JWT;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BookLibraryClassLibrary.Middlewares;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using BookLibraryClassLibrary.Migrations;
+using FluentMigrator.Runner;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace BookLibraryApi
 {
@@ -42,7 +35,8 @@ namespace BookLibraryApi
 
             services.AddControllers();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>
             {
                 opt.SaveToken = true;
                 var key = Encoding.ASCII.GetBytes(Configuration["JWT:Key"]);
@@ -65,6 +59,16 @@ namespace BookLibraryApi
                 });
             });
 
+
+
+            services.AddFluentMigratorCore()
+                .ConfigureRunner(opt =>
+                {
+                    opt.AddSqlServer()
+                    .WithGlobalConnectionString(Configuration.GetConnectionString("Default"))
+                    .ScanIn(typeof(Migration_20220428000000).Assembly).For.All();
+
+                }).AddLogging(opt => opt.AddFluentMigratorConsole());
 
 
             services.AddSingleton<IAuthorizationHandler, AgeRequirementHandler>();
@@ -121,6 +125,14 @@ namespace BookLibraryApi
             {
                 endpoints.MapControllers();
             });
+
+
+            // Fluent Migrator
+
+            //DataBase.EnsureDataBase(Configuration);
+            //app.MigrateDown();
+            //app.MigrateUp();
+
         }
     }
 }
